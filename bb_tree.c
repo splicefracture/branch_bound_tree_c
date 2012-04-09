@@ -60,7 +60,6 @@ void addChild(NODEPTR* headPtr, NODEPTR child){
 	free(temp);
 }
 
-
 int isParent(NODEPTR* headPtr, NODEPTR child){
 	
 	NODEPTR curr = *headPtr;
@@ -107,7 +106,8 @@ void printHelper(NODEPTR head, int level){
 	int i;
 	if (!isEmpty (head)){
 		for(i = 0; i < head->childrenCount; i++){
-			printf("\nlevel %d\n-----\nid - %d   data - %d \t", level,head->children[i]->id, head->children[i]->data);
+			printf("\nlevel %d",level);
+			printNode(head->children[i]);			
 			printHelper(head->children[i],level+1);
 		}		
 	}   	
@@ -118,7 +118,7 @@ void printPathUp(NODEPTR leaf){
 	NODEPTR curr = leaf;
 	
 	while (curr != NULL){
-		printf("\n-----\n id - %d : data - %d  \n-----\n",curr->id,curr->data);
+		printNode(curr);
 		curr = curr->parent;
 	}      
 }
@@ -139,6 +139,31 @@ void findLeafs(NODEPTR* tree, NODEPTR* leafs){
 }
 
 
+void findPath(NODEPTR leaf, NODEPTR* leafList){
+
+	NODEPTR curr = leaf;
+	
+	while (curr != NULL){
+		addChild(leafList,curr);
+		curr = curr->parent;
+	} 
+}
 
 
+void printNode(NODEPTR p){
+	
+	int pid = -1;
+	
+	if (p->parent !=  NULL){
+		pid = p->parent->id;
+	}
+	
+	printf("\n-----------------\n");
+	printf(  "- id         %d -\n",p->id);
+	printf(  "- data       %d -\n",p->data);
+	printf(  "- parent id  %d -\n",pid);
+	printf(  "- # children %d -\n",p->childrenCount);	
+	printf(  "-----------------\n");
+	
+}
 

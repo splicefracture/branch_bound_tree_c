@@ -9,7 +9,7 @@ typedef struct node{
 	int childrenCount;
 	
 	NODEPTR parent;
-	
+		
 	NODEPTR* children;
 	
 }NODE;
@@ -27,3 +27,10 @@ void printList(NODEPTR head);
 void printHelper(NODEPTR head, int level);
 
 void printPathUp(NODEPTR leaf);
+
+void findLeafs(NODEPTR* tree, NODEPTR* leafs);
+
+void findPath(NODEPTR leaf, NODEPTR* leafList);
+
+void printNode(NODEPTR p);
+
