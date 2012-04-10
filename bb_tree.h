@@ -1,36 +1,53 @@
 
-typedef struct node * NODEPTR;
+#ifndef BB_TREE_H
+#define BB_TREE_H
 
-typedef struct node{
-	
+typedef struct tree_node * TREE;
+typedef struct list_node * LIST;
+
+typedef struct tree_node
+{		
 	int id;
 	int data;
 	
-	int childrenCount;
-	
-	NODEPTR parent;
+	TREE parent;
+	LIST children;
 		
-	NODEPTR* children;
+	int pruned;	
+		
+}TREENODE;
+
+typedef struct list_node{
 	
-}NODE;
+	int id;
+	TREE data;
+	LIST next;	
 
-NODEPTR createNode (int data);
+}LISTNODE;
 
-void addChild(NODEPTR* headPtr, NODEPTR child);
-void deleteChild(NODEPTR* headPtr, int child);
+LIST createListNode (TREE t);
 
-int isParent(NODEPTR* headPtr, NODEPTR child);
+void insertListNode(LIST* headPtr, LIST temp);
+void deleteListNode(LIST* headPtr, int target);
+int  isListEmpty(LIST head);
+void printList(LIST head);
 
-int isEmpty(NODEPTR head);
+TREE createTreeNode (int data);
+void addChild(TREE* headPtr, TREE child);
+void deleteChild(TREE* headPtr, int child);
+int isParent(TREE* headPtr, TREE child);
 
-void printList(NODEPTR head);
-void printHelper(NODEPTR head, int level);
+int isEmpty(TREE head);
+void printTree(TREE head);
+void printHelper(TREE head, int level);
+void printPathUp(TREE leaf);
 
-void printPathUp(NODEPTR leaf);
+void printNode(TREE p);
+TREE findChildById(TREE* head, int id);
+void addList(LIST* headPtr, TREE n);
+void findLeafs(TREE* tree, LIST* leafs );
+void findPath(TREE leaf, LIST* path );
 
-void findLeafs(NODEPTR* tree, NODEPTR* leafs);
+//TREE findChildByData(TREE* head, int data);
 
-void findPath(NODEPTR leaf, NODEPTR* leafList);
-
-void printNode(NODEPTR p);
-
+#endif

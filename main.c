@@ -5,22 +5,21 @@
 
 #include "bb_tree.h"
 
-
 void main(){
 	
-	NODEPTR head = createNode(-1);
+	TREE head = createTreeNode(-1);
 	
-	NODEPTR c1 = createNode(23525);
-	NODEPTR c2 = createNode(7447555);
-	NODEPTR c3 = createNode(2634);
-	NODEPTR c4 = createNode(377554);
+	TREE c1 = createTreeNode(23525);
+	TREE c2 = createTreeNode(7447555);
+	TREE c3 = createTreeNode(2634);
+	TREE c4 = createTreeNode(377554);
 	
-	NODEPTR gc1 = createNode(3634);
-	NODEPTR gc2 = createNode(3744);
-	NODEPTR gc3 = createNode(999493);
+	TREE gc1 = createTreeNode(3634);
+	TREE gc2 = createTreeNode(3744);
+	TREE gc3 = createTreeNode(999493);
 	
 	
-	NODEPTR leafs = createNode(-1);;
+	LIST leafs;
 	
 	
 	addChild(&c1,gc1);
@@ -37,6 +36,17 @@ void main(){
 	
 	findLeafs(&head, &leafs);
 	
-	printList(leafs);
+	//printList(leafs);
 	
+	/*
+	printNode(gc3);
+	printNode(gc2);
+	printNode(gc1);
+	printNode(c4);
+	printNode(c3);
+	printNode(c2);
+	printNode(c1);
+	
+	printNode(head);
+	*/
 }
