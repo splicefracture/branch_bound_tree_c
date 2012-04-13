@@ -4,11 +4,13 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "linkedlist.h"
 #include "bb_tree.h"
 
+
+unsigned int LIST_uid = 0;
 unsigned int TREE_uid = 0;
 
+LIST leafs;
 
 TREE createTreeNode (int data){
 	
@@ -33,9 +35,8 @@ TREE createTreeNode (int data){
 
 void addChild(TREE* headPtr, TREE child){
 		
-	TREE curr = *headPtr;	
-	int i, e = 0;
-	LIST l, lcurr;
+	TREE curr = *headPtr;		
+	LIST l2, l, lcurr;
 	
 	if (isParent(headPtr,child) == 1){
 		fprintf (stderr, "Directed Cycle\n");
@@ -43,21 +44,19 @@ void addChild(TREE* headPtr, TREE child){
 	}
 	
 	child->parent = curr;
-	l = createListNode(child);
+	l = createListNode(child);	
+	l2 = createListNode(child);
+	
+	
+	
+	insertListNode(&curr->children, l);			
 		
-	if (isListEmpty (curr->children)){
-		curr->children = l;
-	} else {
-		lcurr = curr->children;
-		while (lcurr != NULL){
-			if(child->id == lcurr->data->id){				
-				return;
-			}			
-			lcurr = lcurr -> next;
-		}		
-		insertListNode(&curr->children, l);		
-	}   	
+	insertListNode(&leafs,l2);	
+	if (curr != NULL){
 		
+		//printf("%d\n",curr->id);
+		deleteListNode(&leafs, curr->id);
+	}
 }
 
 
@@ -65,14 +64,13 @@ void addList(LIST* headPtr, TREE n){
 	
 	LIST curr = *headPtr;
 	
-	while(curr != NULL){
-		
+	while(curr != NULL){		
 		if (n->id == curr->data->id){
 			return;
 		}
-		
 		curr = curr->next;
 	}	
+	
 	insertListNode(headPtr,createListNode(n));
 	
 }
@@ -108,7 +106,9 @@ void printTree (TREE head){
 	if (isEmpty(head)){
 		fprintf (stderr, "\t\t\tNo nodes here.\n");
 	}else{
-		printf("head \n-----\n%d   %d \n", head->id, head->data);
+		
+		printf("head \n----------------------------------------------\ntree id\tdata\n");
+		printf("%d\t%d \n", head->id, head->data);
 		printHelper(head,1);	
 	}
 	
@@ -117,14 +117,18 @@ void printTree (TREE head){
 void printHelper(TREE head, int level){
 
 	int i;
+	LIST curr;
+	
 	if (!isEmpty (head)){
-		/*
-		for(i = 0; i < head->childrenCount; i++){
-			printf("\nlevel %d",level);
-			printNode(head->children[i]);			
-			printHelper(head->children[i],level+1);
+	
+		printList(head->children);
+	
+		curr = head->children;
+
+		while(!isListEmpty(curr)){
+			printHelper(curr->data,level+1);
+			curr = curr->next;
 		}
-		*/		
 	}   	
 }
 
@@ -139,40 +143,11 @@ void printPathUp(TREE leaf){
 }
 
 
-void findLeafs(TREE* head, LIST* leafs){
-	
-	int i;	
-	TREE t, curr = (*head);
-	LIST lcurr, n;
-	
-	if (curr->children==NULL){
-		
-		n = createListNode(curr);
-		fprintf(stderr,"hey\n");
-		insertListNode(leafs,n);
-		
-		fprintf(stderr,"dude\n");
-	}else{
-
-		lcurr = curr->children;		
-
-		while(lcurr != NULL){	
-			
-			//printf("%d\n",lcurr->id);
-			t = lcurr->data;			
-			findLeafs(&t, leafs);						
-			lcurr = lcurr->next;
-		}
-		
-	}
-}
-
-
 void findPath(TREE leaf, LIST* path){
 
 	TREE curr = leaf;	
 	while (curr != NULL){
-		insertListNode(path,createListNode(curr));
+		addList(path,curr);		
 		curr = curr->parent;
 	}	
 }
@@ -210,11 +185,6 @@ TREE findChildById(TREE* headPtr, int id){
 	return NULL;
 }
 
-
-
-
-unsigned int LIST_uid = 0;
-
 LIST createListNode (TREE t)
 {
    LIST newNode;
@@ -236,45 +206,31 @@ LIST createListNode (TREE t)
 void insertListNode (LIST* headPtr, LIST temp)
 {
 	LIST prev, curr;
-	
-	fprintf(stderr,"start\n");
-	
+		
 	if ( isListEmpty (*headPtr)){
-		fprintf(stderr,"tmp\n");
-		curr = temp;
+		(*headPtr) = temp;
 	} else {	   
-		prev = NULL;		
-		
-		fprintf(stderr,"funk\n",curr->data->id);
-		curr = *headPtr;
-		
-		while (curr != NULL){
-			fprintf(stderr,"monkey\n",curr->data->id);
+		prev = NULL;
+		curr = (*headPtr);				
+		while (curr != NULL){			
 			prev = curr;
-			fprintf(stderr,"xx-%d\n",curr->data->id);
-			curr = curr->next;
-		}
-		fprintf(stderr,"1\n");
+			curr = curr->next;			
+		}		
 		prev -> next = temp;
-		fprintf(stderr,"2\n");
 	}
-	
-	fprintf(stderr,"outttt\n");
 }
 
 void deleteListNode (LIST* headPtr, int target)
 {
-   int value;
 	LIST temp, prev, curr;
 
-	if (isListEmpty (*headPtr)){
-		fprintf (stderr, "Can't delete from an empty list\n");      
+	if (isListEmpty (*headPtr)){		
+		//fprintf (stderr, "Can't delete from an empty list\n");      
 	}else if (target ==  (*headPtr)->id){
 	   
 		temp = *headPtr;		
 		*headPtr = (*headPtr)->next;
-		free (temp);    
-		
+		free (temp);
 	}else{
 		
 		prev = *headPtr;
@@ -289,9 +245,9 @@ void deleteListNode (LIST* headPtr, int target)
 			prev -> next = curr -> next;			
 			free(temp);	
 		}else{
-			fprintf (stderr, "%d was not in the list\n", target);
-      }
-   }      
+			//fprintf (stderr, "%d was not in the list\n", target);
+		}
+	}      
 }
 
 int isListEmpty (LIST head){
@@ -305,14 +261,23 @@ void printList (LIST head){
 		
 	LIST curr;
 	if (isListEmpty (head)){
-		fprintf (stderr, "\t\t\tNo nodes here.\n");
+		//fprintf (stderr, "\t\t\tNo nodes here.\n");
 	} else {
 		curr = head;		
+
+		printf("-----------------------------------------------\n");
+		printf("list id\t\ttree id\t\ttree parent id\n");
 		while (curr != NULL){
-			printf("%d   ",   curr->id);
-			printf("%d   \n", curr->data->id);
+			printf("%d\t\t",   curr->id);
+			printf("%d\t\t",   curr->data->id);
+			printf("%d\t\t\n", curr->data->parent->id);
 			curr = curr->next;
-		}		
+		}
+		printf("-----------------------------------------------\n");
 	}   
 }
 
+
+void printLeafs(){
+	printList(leafs);
+}

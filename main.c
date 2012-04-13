@@ -9,34 +9,36 @@ void main(){
 	
 	TREE head = createTreeNode(-1);
 	
-	TREE c1 = createTreeNode(23525);
-	TREE c2 = createTreeNode(7447555);
-	TREE c3 = createTreeNode(2634);
-	TREE c4 = createTreeNode(377554);
+	TREE c1 = createTreeNode(11111);
+	TREE c2 = createTreeNode(22222);
+	TREE c3 = createTreeNode(33333);
+	TREE c4 = createTreeNode(44444);
 	
-	TREE gc1 = createTreeNode(3634);
-	TREE gc2 = createTreeNode(3744);
-	TREE gc3 = createTreeNode(999493);
-	
-	
-	LIST leafs;
+	TREE gc1 = createTreeNode(55555);
+	TREE gc2 = createTreeNode(66666);
+	TREE gc3 = createTreeNode(77777);
 	
 	
-	addChild(&c1,gc1);
-	addChild(&c1,gc2);
-	addChild(&c1,gc3);
+	LIST c;
+	
+	
 	
 	addChild(&head,c1);
 	addChild(&head,c2);
 	addChild(&head,c3);
 	addChild(&head,c4);
 	
+	addChild(&c1,gc1);
+	addChild(&c1,gc2);
+	addChild(&c1,gc3);
+	
+	
 	//printPathUp(gc3);
-	//printList(head);
+	//printList(head->children);	
+	//printTree(head);
 	
-	findLeafs(&head, &leafs);
+	printLeafs();
 	
-	//printList(leafs);
 	
 	/*
 	printNode(gc3);
