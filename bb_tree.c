@@ -12,6 +12,9 @@ unsigned int TREE_uid = 0;
 
 LIST leafs;
 
+
+
+
 TREE createTreeNode (int data){
 	
 	TREE newNode;
@@ -39,15 +42,13 @@ void addChild(TREE* headPtr, TREE child){
 	LIST l2, l, lcurr;
 	
 	if (isParent(headPtr,child) == 1){
-		fprintf (stderr, "Directed Cycle\n");
+		//fprintf (stderr, "Directed Cycle\n");
 		return;
 	}
 	
 	child->parent = curr;
 	l = createListNode(child);	
 	l2 = createListNode(child);
-	
-	
 	
 	insertListNode(&curr->children, l);			
 		
@@ -75,14 +76,16 @@ void addList(LIST* headPtr, TREE n){
 	
 }
 
-
+LIST getLeafs(){
+	return leafs;
+}
 
 int isParent(TREE* headPtr, TREE child){
 	
 	TREE curr = *headPtr;
 	
 	while (curr != NULL){		
-		if (child->id == curr->id){
+		if (child->data == curr->data){
 			return 1;
 		}		
 		curr = curr->parent;

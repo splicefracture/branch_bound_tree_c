@@ -39,6 +39,8 @@ int isParent(TREE* headPtr, TREE child);
 
 int isEmpty(TREE head);
 
+LIST getLeafs();
+
 
 void printNode(TREE p);
 TREE findChildById(TREE* head, int id);
