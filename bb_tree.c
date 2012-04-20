@@ -6,14 +6,15 @@
 
 #include "bb_tree.h"
 
+int max_children = 2;
 
 unsigned int LIST_uid = 0;
 unsigned int TREE_uid = 0;
 
-LIST leafs;
-
-
-
+TREE createHeadNode(int max){
+	max_children = max;
+	return createTreeNode (-1);
+}
 
 TREE createTreeNode (int data){
 	
@@ -28,18 +29,22 @@ TREE createTreeNode (int data){
 	newNode->data = data;  	
 	newNode->id   = TREE_uid++;
 	newNode->parent = NULL;	
-	newNode->children = NULL;
+	
 	newNode->pruned = 0;
+	
+	newNode->childrenCount = 0;
+	newNode->level = 0;
+	
+	newNode->children = (TREE*) malloc (max_children*sizeof(TREE));
 	
 	return newNode;
 
 }
 
-
 void addChild(TREE* headPtr, TREE child){
 		
+	int i;
 	TREE curr = *headPtr;		
-	LIST l2, l, lcurr;
 	
 	if (isParent(headPtr,child) == 1){
 		//fprintf (stderr, "Directed Cycle\n");
@@ -47,37 +52,14 @@ void addChild(TREE* headPtr, TREE child){
 	}
 	
 	child->parent = curr;
-	l = createListNode(child);	
-	l2 = createListNode(child);
-	
-	insertListNode(&curr->children, l);			
-		
-	insertListNode(&leafs,l2);	
-	if (curr != NULL){
-		
-		//printf("%d\n",curr->id);
-		deleteListNode(&leafs, curr->id);
-	}
-}
+	child->level = curr->level+1;
 
-
-void addList(LIST* headPtr, TREE n){
-	
-	LIST curr = *headPtr;
-	
-	while(curr != NULL){		
-		if (n->id == curr->data->id){
+	for(i = 0; i < curr->childrenCount; i++){
+		if (curr->children[i]->id == child->id){
 			return;
 		}
-		curr = curr->next;
 	}	
-	
-	insertListNode(headPtr,createListNode(n));
-	
-}
-
-LIST getLeafs(){
-	return leafs;
+	curr->children[curr->childrenCount++] = child;	
 }
 
 int isParent(TREE* headPtr, TREE child){
@@ -100,187 +82,150 @@ void deleteChild (TREE* headPtr, int target){
 }
 
 int isEmpty (TREE head){
-	
    return (head == NULL);
 }
 
 void printTree (TREE head){
 	
 	if (isEmpty(head)){
-		fprintf (stderr, "\t\t\tNo nodes here.\n");
+		//fprintf (stderr, "\t\t\tNo nodes here.\n");
 	}else{
 		
-		printf("head \n----------------------------------------------\ntree id\tdata\n");
-		printf("%d\t%d \n", head->id, head->data);
-		printHelper(head,1);	
+		printHeader();
+		printNode(head);
+		printf("\n\n");
+		printHelper(head);	
 	}
 	
 }
 
-void printHelper(TREE head, int level){
+void printHeader(){
+	printf("id\tdata\tparent\tchild\tlevel\tpruned\n");
+	printf("------------------------------------------------------\n");	
+}
+
+void printHelper(TREE head){
 
 	int i;
-	LIST curr;
-	
-	if (!isEmpty (head)){
-	
-		printList(head->children);
-	
-		curr = head->children;
 
-		while(!isListEmpty(curr)){
-			printHelper(curr->data,level+1);
-			curr = curr->next;
-		}
-	}   	
+	if (head->childrenCount == 0){
+		return;
+	}
+
+	printHeader();
+	for(i = 0; i < head->childrenCount; i++){		
+		printNode( head->children[i]);	
+	}
+	printf("\n\n");
+	for(i = 0; i < head->childrenCount; i++){
+		printHelper(head->children[i]);			
+	}
+
 }
-
-void printPathUp(TREE leaf){
-	
-	TREE curr = leaf;
-	
-	while (curr != NULL){
-		printNode(curr);
-		curr = curr->parent;
-	}      
-}
-
-
-void findPath(TREE leaf, LIST* path){
-
-	TREE curr = leaf;	
-	while (curr != NULL){
-		addList(path,curr);		
-		curr = curr->parent;
-	}	
-}
-
 
 void printNode(TREE p){
 	
-	int pid = -1;
+	int pid;
 	
-	if (p->parent !=  NULL){
+	if (p->parent != NULL){
 		pid = p->parent->id;
 	}
 	
-	printf("\n-----------------------\n");
-	printf(  "- id         %d  \n",p->id);
-	printf(  "- data       %d  \n",p->data);
-	printf(  "- parent id  %d  \n",pid);
-	//printf(  "- # children %d  \n",p->childrenCount);	
-	printf(  "-----------------------\n");
+	printf("%d\t",   p->id);
+	printf("%d\t",   p->data);
+	
+	printf("%d\t",   pid);
+	printf("%d\t",   p->childrenCount);
+	printf("%d\t",   p->level);
+	printf("%d\t\n",   p->pruned);
+	
 	
 }
 
-TREE findChildById(TREE* headPtr, int id){
+TREE findChildById(TREE head, int id){
 	
 	int i;
-	TREE head = (*headPtr);
-	LIST lcurr = head->children;
-	
-	while(lcurr != NULL){			
-		if (lcurr->id == id){
-			return lcurr->data;
-		}
-		lcurr = lcurr->next;
+	TREE t;
+
+	if (head->id == id){
+		return head;
+	}else{
+		for(i = 0; i < head->childrenCount; i++){
+			t = findChildById(head,id);			
+			if (t != NULL){
+				return t;
+			}	
+		}	
 	}	
 	return NULL;
 }
 
-LIST createListNode (TREE t)
-{
-   LIST newNode;
-   
-   newNode = (LIST) malloc (sizeof(LISTNODE));
-   if (newNode == NULL)
-   {
-      fprintf (stderr, "Out of Memory - CreateNode\n");
-      exit (-1);
-   }
 
-   newNode -> data = t;   
-   newNode -> id   = LIST_uid++;    
-   newNode -> next = NULL;
-   
-   return newNode;
+TREE findNextLeaf(TREE head){
+
+	int i;
+	TREE t;
+
+	if (isLeaf(head) == 1 && head->level != max_children ){
+		return head;
+	}else{
+		for(i = 0; i < head->childrenCount; i++){
+			t = findNextLeaf(head->children[i]);			
+			if (t != NULL){
+				return t;
+			}	
+		}	
+	}	
+	return NULL;
 }
 
-void insertListNode (LIST* headPtr, LIST temp)
-{
-	LIST prev, curr;
+int isLeaf(TREE head){
+	return (head->pruned == 0 && head->childrenCount == 0);	
+}
+
+void printLevel(TREE head, int level){
 		
-	if ( isListEmpty (*headPtr)){
-		(*headPtr) = temp;
-	} else {	   
-		prev = NULL;
-		curr = (*headPtr);				
-		while (curr != NULL){			
-			prev = curr;
-			curr = curr->next;			
-		}		
-		prev -> next = temp;
+	int i;
+	
+	if (head->level == level){
+		printNode(head);
+	}else{
+		for(i = 0; i < head->childrenCount; i++){
+			printLevel(head->children[i],level);
+		}	
 	}
 }
 
-void deleteListNode (LIST* headPtr, int target)
-{
-	LIST temp, prev, curr;
+int compareTreePath(TREE curr, TREE target){
+	
+	TREE t = target;
+	int exists =1;
+	if(curr->level != target->level){
+		return 0;
+	}
+	while(curr!=NULL && exists == 1){
+		exists = 0;		
+		while(t!=NULL){
+			if (t->data == curr->data){
+				exists =1;
+			}
+			t=t->parent;
+		}
+		t = target;	
+		curr=curr->parent;
+	}
+	return exists;	
+}
 
-	if (isListEmpty (*headPtr)){		
-		//fprintf (stderr, "Can't delete from an empty list\n");      
-	}else if (target ==  (*headPtr)->id){
-	   
-		temp = *headPtr;		
-		*headPtr = (*headPtr)->next;
-		free (temp);
+void printLeafs(TREE head){
+	
+	int i;
+	
+	if (head->childrenCount == 0){
+		printNode(head);
 	}else{
-		
-		prev = *headPtr;
-		curr = (*headPtr) -> next;
-
-		while (curr != NULL && target !=  (*headPtr)->id ){
-			prev = curr;
-			curr = curr -> next;
-		}      
-		if(curr != NULL){
-			temp = curr;
-			prev -> next = curr -> next;			
-			free(temp);	
-		}else{
-			//fprintf (stderr, "%d was not in the list\n", target);
-		}
-	}      
-}
-
-int isListEmpty (LIST head){
-		
-   return (head == NULL);
-   
-}
-
-
-void printList (LIST head){
-		
-	LIST curr;
-	if (isListEmpty (head)){
-		//fprintf (stderr, "\t\t\tNo nodes here.\n");
-	} else {
-		curr = head;		
-
-		printf("-----------------------------------------------\n");
-		printf("list id\t\ttree id\t\ttree parent id\n");
-		while (curr != NULL){
-			printf("%d\t\t",   curr->id);
-			printf("%d\t\t",   curr->data->id);
-			printf("%d\t\t\n", curr->data->parent->id);
-			curr = curr->next;
-		}
-		printf("-----------------------------------------------\n");
-	}   
-}
-
-
-void printLeafs(){
-	printList(leafs);
+		for(i = 0; i < head->childrenCount; i++){
+			printLeafs(head->children[i]);
+		}	
+	}
 }
